@@ -1,0 +1,189 @@
+<!DOCTYPE html>
+<html lang="tr">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no, viewport-fit=cover">
+  <title>RoWorld - Taktiksel Dünya Savaşı</title>
+  <link rel="stylesheet" href="style.css">
+</head>
+<body>
+  <div class="scanline"></div>
+
+  <!-- =====================================================================
+       1. MENU / LOBBY JOIN SCREEN
+       ===================================================================== -->
+  <div id="menu-screen" class="screen">
+    <div class="menu-box">
+      <div class="title-badge">ROBLOX ROWORLD WEB EDITION</div>
+      <h1 class="logo">ROWORLD</h1>
+      <p class="subtitle">Gerçek Zamanlı Taktiksel Dünya Hakimiyeti</p>
+
+      <div class="input-group">
+        <label for="player-name-input">Komutan Adı</label>
+        <input type="text" id="player-name-input" class="tactical-input" placeholder="Adını gir..." maxlength="16">
+      </div>
+
+      <div class="input-group">
+        <label for="room-code-input">Oda Kodu (Yerel Ağ)</label>
+        <input type="text" id="room-code-input" class="tactical-input" placeholder="DUNYA" value="DUNYA" maxlength="12">
+      </div>
+
+      <button id="btn-join-room" class="btn-primary">ODAYA KATIL / KUR</button>
+      <button id="btn-offline-mode" class="btn-secondary">⚔️ TAMAMEN ÇEVRİMDIŞI / BOT SAVAŞI</button>
+
+      <div class="hotspot-tip">
+        <strong>🏫 Okulda / İnternetsiz Nasıl Oynanır?</strong><br>
+        1. Biriniz telefonundan <strong>Erişim Noktası (Hotspot)</strong> açsın (mobil veriye gerek yok!).<br>
+        2. Arkadaşlarınız bu Wi-Fi ağına bağlansın.<br>
+        3. Sunucuyu açan kişinin ekranındaki <strong>Karekod'u</strong> telefonla okutarak oyuna girin!
+      </div>
+    </div>
+  </div>
+
+  <!-- =====================================================================
+       2. ROOM LOBBY SCREEN
+       ===================================================================== -->
+  <div id="lobby-screen" class="screen hidden">
+    <div class="lobby-container">
+      <div class="lobby-header">
+        <div>
+          <div class="title-badge">HAZIRLIK ODASI</div>
+          <div class="room-badge" id="lobby-room-name">ODA: DUNYA</div>
+        </div>
+        <button id="btn-show-qr" class="hud-btn">📱 KAREKOD / ARKADAŞ ÇAĞIR</button>
+      </div>
+
+      <div class="players-list" id="lobby-players-list">
+        <!-- Rendered by game.js -->
+      </div>
+
+      <div class="lobby-controls">
+        <button id="btn-add-bot" class="btn-secondary">🤖 + YAPAY ZEKA EKLE</button>
+        <button id="btn-leave-lobby" class="btn-secondary">🚪 ODADAN AYRIL</button>
+      </div>
+
+      <button id="btn-start-game" class="btn-primary">⚔️ SAVAŞI BAŞLAT</button>
+    </div>
+  </div>
+
+  <!-- =====================================================================
+       3. ACTIVE GAMEPLAY SCREEN
+       ===================================================================== -->
+  <div id="game-screen" class="screen hidden">
+    <!-- Top HUD -->
+    <div class="top-hud">
+      <div class="hud-panel">
+        <div class="stat-item">
+          <span class="stat-label">Hazine</span>
+          <span class="stat-val stat-gold" id="hud-gold">$350</span>
+        </div>
+        <div class="stat-item">
+          <span class="stat-label">Toprak</span>
+          <span class="stat-val stat-land" id="hud-territories">0%</span>
+        </div>
+        <div class="stat-item">
+          <span class="stat-label">Ordular</span>
+          <span class="stat-val" id="hud-troops">0</span>
+        </div>
+      </div>
+
+      <div style="display: flex; gap: 6px;">
+        <button id="btn-game-qr" class="hud-btn" title="Karekod">📱 QR</button>
+        <button id="btn-sound-toggle" class="hud-btn" title="Ses Aç/Kapat">🔊</button>
+      </div>
+    </div>
+
+    <!-- Leaderboard Drawer -->
+    <div class="leaderboard-drawer" id="hud-leaderboard">
+      <div style="font-weight: 700; margin-bottom: 4px; color: var(--accent-cyan); text-transform: uppercase;">Liderlik</div>
+      <div id="leaderboard-items"></div>
+    </div>
+
+    <!-- Main Canvas -->
+    <canvas id="game-canvas"></canvas>
+
+    <!-- Quick Chat Drawer -->
+    <div class="chat-drawer" id="chat-messages"></div>
+
+    <!-- Event Alert Banner (Nuke, conquest) -->
+    <div id="event-alert" class="event-alert hidden"></div>
+
+    <!-- Bottom Command Center -->
+    <div class="bottom-command-center">
+      <div class="selection-banner" id="selection-banner">
+        Bir bölge seç ve komşu bölgeye asker gönder
+      </div>
+
+      <div class="action-row">
+        <!-- Percentage Slider -->
+        <div class="ratio-group">
+          <button class="ratio-btn" data-ratio="25">25%</button>
+          <button class="ratio-btn active" data-ratio="50">50%</button>
+          <button class="ratio-btn" data-ratio="75">75%</button>
+          <button class="ratio-btn" data-ratio="100">100%</button>
+        </div>
+
+        <!-- Build Buttons -->
+        <button class="tactical-btn" id="btn-build-city" title="Asker üretimini artırır">
+          <span>🏛️ Şehir</span>
+          <span class="btn-cost">$150</span>
+        </button>
+
+        <button class="tactical-btn" id="btn-build-factory" title="Altın gelirini artırır">
+          <span>🏭 Fabrika</span>
+          <span class="btn-cost">$200</span>
+        </button>
+
+        <button class="tactical-btn" id="btn-build-port" title="Deniz aşırı saldırı sağlar">
+          <span>⚓ Liman</span>
+          <span class="btn-cost">$250</span>
+        </button>
+
+        <button class="tactical-btn" id="btn-build-fort" title="Savunmayı +%50 güçlendirir">
+          <span>🛡️ Kale</span>
+          <span class="btn-cost">$120</span>
+        </button>
+
+        <!-- Superweapon -->
+        <button class="tactical-btn nuke-btn" id="btn-launch-nuke" title="Bölgeyi ve komşularını kül eder">
+          <span>☢️ NÜKLEER</span>
+          <span class="btn-cost" style="color: #fca5a5;">$1000</span>
+        </button>
+      </div>
+    </div>
+  </div>
+
+  <!-- =====================================================================
+       4. QR CODE MODAL
+       ===================================================================== -->
+  <div id="qr-modal" class="modal-overlay hidden">
+    <div class="modal-content">
+      <h2 class="modal-title">ARKADAŞINI ÇAĞIR</h2>
+      <p style="font-size: 0.85rem; color: var(--text-dim);">
+        Arkadaşın telefon kamerasını bu karekoda doğrultup anında oyuna katılabilir!
+      </p>
+      <canvas id="qr-canvas" width="200" height="200"></canvas>
+      <div class="qr-link" id="qr-link-text">http://localhost:3000</div>
+      <button id="btn-close-qr" class="btn-primary">KAPAT</button>
+    </div>
+  </div>
+
+  <!-- =====================================================================
+       5. VICTORY / GAME OVER MODAL
+       ===================================================================== -->
+  <div id="victory-modal" class="modal-overlay hidden">
+    <div class="modal-content">
+      <h1 class="modal-title" id="victory-title" style="color: var(--accent-gold); font-size: 2rem;">ZAFER!</h1>
+      <p id="victory-desc" style="margin-bottom: 20px; font-size: 1.1rem;"></p>
+      <button id="btn-restart" class="btn-primary">YENİDEN OYNA</button>
+    </div>
+  </div>
+
+  <!-- Scripts -->
+  <script src="mapData.js"></script>
+  <script src="audio.js"></script>
+  <script src="qrcode.js"></script>
+  <script src="offlineEngine.js"></script>
+  <script src="game.js"></script>
+</body>
+</html>
